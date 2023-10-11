@@ -4,6 +4,7 @@ from skelbiameAPI.models import Tag
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from .generalFunctions import IsFullValid
 
+
 def tags(request):
     if request.method == "GET":
         data = Tag.objects.all().values("tag")
@@ -12,9 +13,10 @@ def tags(request):
     else:
         return HttpResponseBadRequest()
 
+
 def tag(request, name):
     try:
-        requestedTag = Tag.objects.get(tag = name)
+        requestedTag = Tag.objects.get(tag=name)
     except ObjectDoesNotExist:
         return HttpResponseNotFound()
 
@@ -23,6 +25,7 @@ def tag(request, name):
         return HttpResponse()
     else:
         return HttpResponseBadRequest()
+
 
 def createTag(request):
     if request.method != "POST":
