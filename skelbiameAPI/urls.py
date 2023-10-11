@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .Views import users, tags, adverts, comments
+from .Views import users, tags, adverts, comments, ratings
 
 urlpatterns = [
     path("user/allUsers", users.users),
@@ -21,4 +21,9 @@ urlpatterns = [
     path("comment/advert/<int:advert>", comments.commentsByAdvert),
     path("comment/createComment", comments.createComment),
     path("comment/tag/<str:tag>", comments.commentsByTag),
+
+    path("rating/user/<int:advert>/<str:user>", ratings.ratingByUserAdvert),
+    path("rating/advert/<int:advert>", ratings.ratingOfAdvert),
+    path("rating/<int:id>", ratings.rating),
+    path("rating/createRating", ratings.createRating),
 ]
