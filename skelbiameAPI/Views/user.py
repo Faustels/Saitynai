@@ -14,7 +14,7 @@ def users(request):
         converted = [entry for entry in data]
         return JsonResponse(converted, safe=False, json_dumps_params={'indent': 2})
     else:
-        return HttpResponseBadRequest()
+        return HttpResponse(status=405)
 
 def user(request, name):
     try:
@@ -50,12 +50,12 @@ def user(request, name):
             return HttpResponseBadRequest()
 
     else:
-        return HttpResponseBadRequest()
+        return HttpResponse(status=405)
 
 
 def createUser(request):
     if request.method != "POST":
-        return HttpResponseBadRequest()
+        return HttpResponse(status=405)
     body = json.loads(request.body)
     if IsFullValid(body, ["username", "email", "password"]):
         try:

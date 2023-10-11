@@ -1,12 +1,18 @@
 from django.urls import path
 
-from .Views import user, tags
+from .Views import user, tags, adverts
 
 urlpatterns = [
-    path("users", user.users),
+    path("user/allUsers", user.users),
     path("user/<str:name>", user.user),
-    path("createUser", user.createUser),
-    path("tags", tags.tags),
+    path("user/createUser", user.createUser),
+
+    path("tag/tags", tags.tags),
     path("tag/<str:name>", tags.tag),
-    path("createTag", tags.createTag),
+    path("tag/createTag", tags.createTag),
+
+    path("advert/allAdverts", adverts.allAdverts),
+    path("advert/<int:advert>", adverts.advert),
+    path("advert/createAdvert", adverts.createAdvert),
+    path("advert/tag/<str:tag>", adverts.advertByTag),
 ]

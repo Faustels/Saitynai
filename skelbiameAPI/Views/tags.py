@@ -11,7 +11,7 @@ def tags(request):
         converted = [entry for entry in data]
         return JsonResponse(converted, safe=False, json_dumps_params={'indent': 2})
     else:
-        return HttpResponseBadRequest()
+        return HttpResponse(status=405)
 
 
 def tag(request, name):
@@ -24,12 +24,12 @@ def tag(request, name):
         requestedTag.delete()
         return HttpResponse()
     else:
-        return HttpResponseBadRequest()
+        return HttpResponse(status=405)
 
 
 def createTag(request):
     if request.method != "POST":
-        return HttpResponseBadRequest()
+        return HttpResponse(status=405)
     body = json.loads(request.body)
     if IsFullValid(body, ["tag"]):
         try:
