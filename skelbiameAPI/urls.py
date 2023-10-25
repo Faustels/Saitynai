@@ -19,11 +19,12 @@ urlpatterns = [
     path("comment/allComments", comments.allComments),
     path("comment/<int:id>", comments.comment),
     path("comment/advert/<int:advert>", comments.commentsByAdvert),
-    path("comment/createComment", comments.createComment),
+    path("comment/createComment/<int:advert>", comments.createComment),
     path("comment/tag/<str:tag>", comments.commentsByTag),
 
     path("rating/user/<int:advert>/<str:user>", ratings.ratingByUserAdvert),
     path("rating/advert/<int:advert>", ratings.ratingOfAdvert),
-    path("rating/<int:id>", ratings.rating),
-    path("rating/createRating", ratings.createRating),
+    path("rating/advert/list/<int:advert>", ratings.advertRatingList),
+    path("rating/id/<int:id>", ratings.rating),
+    path("rating/createRating/<int:advert>", ratings.createRating),
 ]

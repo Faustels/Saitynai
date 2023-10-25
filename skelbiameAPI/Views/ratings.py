@@ -35,6 +35,22 @@ def ratingOfAdvert(request, advert):
     else:
         return HttpResponse(status=405)
 
+def advertRatingList(request, advert):
+    if request.method == "GET":
+        try:
+            requestedAdvert = Advert.objects.get(id=advert)
+        except ObjectDoesNotExist:
+            return HttpResponseNotFound()
+        requestedRating = Rating.objects.filter(advertid=requestedAdvert)
+        ans = []
+        for i in requestedRating:
+            temp = {"id": i.id, "positive": i.positive == 1, "user": i.user.username, "advertid": i.advertid.id}
+            ans.append(temp)
+
+        return JsonResponse(ans, safe=False, json_dumps_params={'indent': 2})
+    else:
+        return HttpResponse(status=405)
+
 def rating(request, id):
     try:
         requestedRating = Rating.objects.get(id=id)
@@ -66,13 +82,13 @@ def rating(request, id):
         return HttpResponse(status=405)
 
 
-def createRating(request):
+def createRating(request, advert):
     if request.method != "POST":
         return HttpResponse(status=405)
     body = json.loads(request.body)
-    if IsFullValid(body, ["positive", "advertid"]):
+    if IsFullValid(body, ["positive"]):
         try:
-            requestedAdvert = Advert.objects.get(id=body["advertid"])
+            requestedAdvert = Advert.objects.get(id=advert)
         except ObjectDoesNotExist:
             return HttpResponse(status=422)
 

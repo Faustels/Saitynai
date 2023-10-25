@@ -54,13 +54,13 @@ def comment(request, id):
         return HttpResponse(status=405)
 
 
-def createComment(request):
+def createComment(request, advert):
     if request.method != "POST":
         return HttpResponse(status=405)
     body = json.loads(request.body)
-    if IsFullValid(body, ["text", "advertid"]):
+    if IsFullValid(body, ["text"]):
         try:
-            requestedAdvert = Advert.objects.get(id=body["advertid"])
+            requestedAdvert = Advert.objects.get(id=advert)
         except ObjectDoesNotExist:
             return HttpResponse(status=422)
         newComment = Comment()
