@@ -5,11 +5,11 @@ from django.forms.models import model_to_dict
 from skelbiameAPI.models import User, Rating, Advert
 from .generalFunctions import IsValid, IsFullValid
 
-def ratingByUserAdvert(request, advert, user):
+def ratingByUserAdvert(request, advert):
     if request.method == "GET":
         try:
             requestedAdvert = Advert.objects.get(id=advert)
-            requestedUser = User.objects.get(username=user)
+            requestedUser = User.objects.get(username="admin")
             requestedRating = Rating.objects.get(user=requestedUser, advertid=requestedAdvert)
         except ObjectDoesNotExist:
             return HttpResponseNotFound()

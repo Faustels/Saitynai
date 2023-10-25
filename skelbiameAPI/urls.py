@@ -22,7 +22,7 @@ urlpatterns = [
     path("comment/createComment/<int:advert>", comments.createComment),
     path("comment/tag/<str:tag>", comments.commentsByTag),
 
-    path("rating/user/<int:advert>/<str:user>", ratings.ratingByUserAdvert),
+    path("rating/<int:advert>", ratings.ratingByUserAdvert),
     path("rating/advert/<int:advert>", ratings.ratingOfAdvert),
     path("rating/advert/list/<int:advert>", ratings.advertRatingList),
     path("rating/id/<int:id>", ratings.rating),
