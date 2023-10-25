@@ -17,7 +17,7 @@ class Tag(models.Model):
 
 
 class User(models.Model):
-    username = models.CharField(db_column='userName', max_length=20, primary_key=True)  # Field name made lowercase.
+    username = models.SlugField(db_column='userName', max_length=20, primary_key=True)  # Field name made lowercase.
     password = models.CharField(max_length=64)
     email = models.EmailField(max_length=100)
 
