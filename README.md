@@ -1,4 +1,4 @@
-# Saitynai
+# Projektas "Skelbiame"
 
 ## Sistemos paskirtis
 Šio projekto tikslas yra sukurti svetainę, kurioje naudotojams būtu galima įkelti skelbimus.
