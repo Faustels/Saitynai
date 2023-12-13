@@ -69,6 +69,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'Saitynai.wsgi.application'
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
@@ -82,7 +88,6 @@ DATABASES = {
         'PORT':'3306',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -124,3 +129,16 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTH_USER_MODEL = "skelbiameAPI.User"
+
+AUTHENTICATION_BACKENDS = [
+    'skelbiameAPI.Authorization.UserBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+SIMPLE_JWT = {
+    'USER_ID_FIELD': 'username',
+    "TOKEN_OBTAIN_SERIALIZER": "skelbiameAPI.Tokens.TokenSerializer",
+    "ALGORITHM": "HS256",
+}

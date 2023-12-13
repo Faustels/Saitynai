@@ -1,20 +1,29 @@
 import json
-from django.http import JsonResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponse
+from django.http import JsonResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponse, HttpResponseForbidden
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.forms.models import model_to_dict
 from skelbiameAPI.models import User, Rating, Advert
 from .generalFunctions import IsValid, IsFullValid
+from skelbiameAPI.Tokens import TokenIsAdmin, TokenUser, TokenCanEdit, ToPureToken
 
 def ratingByUserAdvert(request, advert):
+    token = ToPureToken(request.headers.get("Authorization"))
+
+    username = TokenUser(token)
+    if username is None:
+        return HttpResponseForbidden()
+
     if request.method == "GET":
         try:
             requestedAdvert = Advert.objects.get(id=advert)
-            requestedUser = User.objects.get(username="admin")
+            requestedUser = User.objects.get(username=username)
             requestedRating = Rating.objects.get(user=requestedUser, advertid=requestedAdvert)
         except ObjectDoesNotExist:
             return HttpResponseNotFound()
 
         return JsonResponse(model_to_dict(requestedRating), safe=False, json_dumps_params={'indent': 2})
+    if request.method == "POST":
+        return createRating(request, advert)
     else:
         return HttpResponse(status=405)
 
@@ -31,11 +40,30 @@ def ratingOfAdvert(request, advert):
                 ans += 1
             else:
                 ans -= 1
-        return JsonResponse({"fullRating": ans}, safe=False, json_dumps_params={'indent': 2})
+
+        userRating = None
+
+        token = ToPureToken(request.headers.get("Authorization"))
+        username = TokenUser(token)
+        if username is not None:
+            try:
+                requestedUser = User.objects.get(username=username)
+                requestedRating = Rating.objects.get(user=requestedUser, advertid=requestedAdvert)
+                userRating = requestedRating.positive == 1
+            except:
+                pass
+        return JsonResponse({"fullRating": ans, "userPositive": userRating}, safe=False, json_dumps_params={'indent': 2})
+    elif request.method == "POST":
+        return createRating(request, advert)
     else:
         return HttpResponse(status=405)
 
 def advertRatingList(request, advert):
+    token = ToPureToken(request.headers.get("Authorization"))
+
+    if not TokenIsAdmin(token):
+        return HttpResponseForbidden()
+
     if request.method == "GET":
         try:
             requestedAdvert = Advert.objects.get(id=advert)
@@ -52,10 +80,17 @@ def advertRatingList(request, advert):
         return HttpResponse(status=405)
 
 def rating(request, id):
+    token = ToPureToken(request.headers.get("Authorization"))
+
     try:
         requestedRating = Rating.objects.get(id=id)
     except ObjectDoesNotExist:
+        if not TokenIsAdmin(token):
+            return HttpResponseForbidden()
         return HttpResponseNotFound()
+
+    if not TokenCanEdit(token, requestedRating.user.username):
+        return HttpResponseForbidden()
 
     if request.method == "GET":
         requestedRating = model_to_dict(requestedRating)
@@ -65,9 +100,8 @@ def rating(request, id):
         requestedRating.delete()
         return HttpResponse()
 
-    elif request.method == "PUT":
+    elif request.method == "PUT" or request.method == "PATCH":
         body = json.loads(request.body)
-
         if len(body) != 0 and IsValid(body, ["positive"]):
             if body["positive"] != 1 and body["positive"] != 0:
                 return HttpResponse(status=422)
@@ -83,19 +117,25 @@ def rating(request, id):
 
 
 def createRating(request, advert):
-    if request.method != "POST":
-        return HttpResponse(status=405)
+    token = ToPureToken(request.headers.get("Authorization"))
+
+    username = TokenUser(token)
+    if username is None:
+        return HttpResponseForbidden()
+
     body = json.loads(request.body)
+
     if IsFullValid(body, ["positive"]):
         try:
             requestedAdvert = Advert.objects.get(id=advert)
         except ObjectDoesNotExist:
             return HttpResponse(status=422)
 
-        requestedUser = User.objects.get(username="admin")
+        requestedUser = User.objects.get(username=username)
 
         try:
             requestedRating = Rating.objects.get(user=requestedUser, advertid=requestedAdvert)
+            return HttpResponse(status=409)
         except ObjectDoesNotExist:
             if body["positive"] != 1 and body["positive"] != 0:
                 return HttpResponse(status=422)

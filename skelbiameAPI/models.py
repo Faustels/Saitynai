@@ -6,6 +6,9 @@
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.core.exceptions import ObjectDoesNotExist
+import hashlib
 
 
 class Tag(models.Model):
@@ -15,11 +18,40 @@ class Tag(models.Model):
         managed = True
         db_table = 'tag'
 
+class Role(models.Model):
+    role = models.CharField(max_length=20, primary_key=True)
 
-class User(models.Model):
+    class Meta:
+        managed = False
+        db_table = "role"
+
+class UserManager(BaseUserManager):
+    use_in_migration = True
+
+    def create_user(self, username, email, password):
+        user = self.model(username=username, email=email)
+        user.set_password(hashlib.sha256(password).hexdigest())
+
+        return user
+
+    def get_by_natural_key(self, username):
+        try:
+            return User.objects.get(username=username)
+        except ObjectDoesNotExist:
+            return None
+
+
+class User(AbstractBaseUser):
     username = models.SlugField(db_column='userName', max_length=20, primary_key=True)  # Field name made lowercase.
     password = models.CharField(max_length=64)
     email = models.EmailField(max_length=100)
+
+    role = models.ForeignKey(Role, db_column="role", on_delete=models.CASCADE)
+
+    USERNAME_FIELD = "username"
+    REQUIRED_FIELDS = ["email"]
+
+    objects = UserManager()
 
     class Meta:
         managed = True

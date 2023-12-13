@@ -3,28 +3,22 @@ from django.urls import path
 from .Views import users, tags, adverts, comments, ratings
 
 urlpatterns = [
-    path("user/allUsers", users.users),
-    path("user/name/<str:name>", users.user),
-    path("user/createUser", users.createUser),
+    path("users", users.users),
+    path("users/<str:name>", users.user),
 
-    path("tag/tags", tags.tags),
-    path("tag/name/<str:name>", tags.tag),
-    path("tag/createTag", tags.createTag),
+    path("tags", tags.tags),
+    path("tags/<str:name>", tags.tag),
 
-    path("advert/allAdverts", adverts.allAdverts),
-    path("advert/id/<int:advert>", adverts.advert),
-    path("advert/createAdvert", adverts.createAdvert),
-    path("advert/tag/<str:tag>", adverts.advertByTag),
+    path("adverts", adverts.allAdverts),
+    path("adverts/<int:advert>", adverts.advert),
+    path("tags/<str:tag>/adverts", adverts.advertByTag),
 
-    path("comment/allComments", comments.allComments),
-    path("comment/id/<int:id>", comments.comment),
-    path("comment/advert/<int:advert>", comments.commentsByAdvert),
-    path("comment/createComment/<int:advert>", comments.createComment),
-    path("comment/tag/<str:tag>", comments.commentsByTag),
+    path("comments", comments.allComments),
+    path("comments/<int:id>", comments.comment),
+    path("adverts/<int:advert>/comments", comments.commentsByAdvert),
+    path("tags/<str:tag>/comments", comments.commentsByTag),
 
-    path("rating/<int:advert>", ratings.ratingByUserAdvert),
-    path("rating/advert/<int:advert>", ratings.ratingOfAdvert),
-    path("rating/advert/list/<int:advert>", ratings.advertRatingList),
-    path("rating/id/<int:id>", ratings.rating),
-    path("rating/createRating/<int:advert>", ratings.createRating),
+    path("adverts/<int:advert>/ratings", ratings.ratingOfAdvert),
+    path("adverts/<int:advert>/ratings/list", ratings.advertRatingList),
+    path("ratings/<int:id>", ratings.rating),
 ]
