@@ -85,7 +85,7 @@ DATABASES = {
         'NAME': os.environ.get('AZURE_MYSQL_NAME'),
         'USER': os.environ.get('AZURE_MYSQL_USER'),
         "PASSWORD": os.environ.get('AZURE_MYSQL_PASSWORD'),
-        'HOST': 'skelbiameapi-server.mysql.database.azure.com',
+        'HOST': os.environ.get('AZURE_MYSQL_HOST'),
         'PORT':'3306',
         "OPTIONS": {
             "sslmode": "require"
