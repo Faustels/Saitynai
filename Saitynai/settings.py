@@ -88,7 +88,7 @@ DATABASES = {
         'HOST': os.environ.get('AZURE_MYSQL_HOST'),
         'PORT':'3306',
         "OPTIONS": {
-            "sslmode": "require"
+            "ssl_mode": "require"
         },
     }
 }
