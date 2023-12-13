@@ -1,8 +1,10 @@
 import json
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse, HttpResponseForbidden
 from skelbiameAPI.models import Tag
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from .generalFunctions import IsFullValid
+from skelbiameAPI.Tokens import TokenIsAdmin, ToPureToken
+from django.forms.models import model_to_dict
 
 
 def tags(request):
@@ -10,6 +12,8 @@ def tags(request):
         data = Tag.objects.all().values("tag")
         converted = [entry for entry in data]
         return JsonResponse(converted, safe=False, json_dumps_params={'indent': 2})
+    elif request.method == "POST":
+        return createTag(request)
     else:
         return HttpResponse(status=405)
 
@@ -21,6 +25,11 @@ def tag(request, name):
         return HttpResponseNotFound()
 
     if request.method == "DELETE":
+        token = ToPureToken(request.headers.get("Authorization"))
+
+        if not TokenIsAdmin(token):
+            return HttpResponseForbidden()
+
         requestedTag.delete()
         return HttpResponse()
     else:
@@ -28,9 +37,13 @@ def tag(request, name):
 
 
 def createTag(request):
-    if request.method != "POST":
-        return HttpResponse(status=405)
+    token = ToPureToken(request.headers.get("Authorization"))
+
+    if not TokenIsAdmin(token):
+        return HttpResponseForbidden()
+
     body = json.loads(request.body)
+
     if IsFullValid(body, ["tag"]):
         try:
             requestedTag = Tag.objects.get(tag=body["tag"])
@@ -44,6 +57,6 @@ def createTag(request):
             except ValidationError:
                 return HttpResponse(status=422)
             newTag.save()
-            return HttpResponse(status=201)
+            return JsonResponse(model_to_dict(newTag), status=201, safe=False, json_dumps_params={'indent': 2})
     else:
         return HttpResponseBadRequest()

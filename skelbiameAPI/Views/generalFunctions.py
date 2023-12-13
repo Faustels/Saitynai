@@ -10,3 +10,17 @@ def IsFullValid(dictionary, keys):
         return len(dictionary) == len(keys)
     else:
         return False
+
+def IsPutValid(dictionary, required, allPossible):
+    for i in required:
+        if i not in dictionary:
+            return False
+    return IsValid(dictionary, allPossible)
+
+def EditElement(element, body, types, method):
+    for i in types:
+        if i in body:
+            setattr(element, i, body[i])
+        elif method == "PUT":
+            setattr(element, i, None)
+    return element
