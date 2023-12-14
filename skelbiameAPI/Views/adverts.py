@@ -77,7 +77,7 @@ def createAdvert(request):
 
     body = json.loads(request.body)
 
-    if IsFullValid(body, ["name", "description", "tag", "token"]):
+    if IsFullValid(body, ["name", "description", "tag"]):
         try:
             requestedTag = Tag.objects.get(tag=body["tag"])
         except ObjectDoesNotExist:
