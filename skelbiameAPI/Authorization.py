@@ -17,5 +17,5 @@ class UserBackend(BaseBackend):
     def get_user(self, user_pk):
         try:
             return User.objects.get(pk=user_pk)
-        except ObjectDoesNotExist:
+        except:
             return None
