@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ["skelbiameapi.azurewebsites.net", "localhost", "127.0.0.1"]
 # Application definition
 
 INSTALLED_APPS = [
+    'website',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -38,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'skelbiameAPI',
-    'website',
     'corsheaders',
 ]
 
