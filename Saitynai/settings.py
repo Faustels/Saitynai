@@ -69,7 +69,7 @@ ROOT_URLCONF = 'Saitynai.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'Templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -81,10 +81,6 @@ TEMPLATES = [
         },
     },
 ]
-
-TEMPLATE_DIRS = (
-    "website/templates",
-)
 
 
 CORS_ORIGIN_ALLOW_ALL = True
