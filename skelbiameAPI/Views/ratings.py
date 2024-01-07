@@ -22,7 +22,7 @@ def ratingByUserAdvert(request, advert):
             return HttpResponseNotFound()
 
         return JsonResponse(model_to_dict(requestedRating), safe=False, json_dumps_params={'indent': 2})
-    elif request.method == "POST" or request.method == "PATCH" or request.method == "PUT":
+    elif request.method == "POST" or request.method == "PATCH" or request.method == "PUT" or request.method == "DELETE":
         return createRating(request, advert)
     else:
         return HttpResponse(status=405)
@@ -53,7 +53,7 @@ def ratingOfAdvert(request, advert):
             except:
                 pass
         return JsonResponse({"fullRating": ans, "userPositive": userRating}, safe=False, json_dumps_params={'indent': 2})
-    elif request.method == "POST" or request.method == "PATCH" or request.method == "PUT":
+    elif request.method == "POST" or request.method == "PATCH" or request.method == "PUT" or request.method == "DELETE":
         return createRating(request, advert)
     else:
         return HttpResponse(status=405)
@@ -96,10 +96,6 @@ def rating(request, id):
         requestedRating = model_to_dict(requestedRating)
         return JsonResponse(requestedRating, safe=False, json_dumps_params={'indent': 2})
 
-    elif request.method == "DELETE":
-        requestedRating.delete()
-        return HttpResponse()
-
     else:
         return HttpResponse(status=405)
 
@@ -108,13 +104,10 @@ def createRating(request, advert):
     token = ToPureToken(request.headers.get("Authorization"))
 
     username = TokenUser(token)
-    print(username)
     if username is None:
         return HttpResponseForbidden()
 
     requestedUser = User.objects.get(username=username)
-
-    body = json.loads(request.body)
 
     if request.method == "PUT" or request.method == "PATCH":
         body = json.loads(request.body)
@@ -132,7 +125,15 @@ def createRating(request, advert):
         else:
             return HttpResponseBadRequest()
 
+    if request.method == "DELETE":
+        try:
+            requestedRating = Rating.objects.get(advertId=advert, user=requestedUser)
+            requestedRating.delete()
+            return HttpResponse()
+        except:
+            return HttpResponseNotFound()
     elif request.method == "POST":
+        body = json.loads(request.body)
         if IsFullValid(body, ["positive"]):
             try:
                 requestedAdvert = Advert.objects.get(id=advert)
