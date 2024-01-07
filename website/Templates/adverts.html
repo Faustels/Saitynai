@@ -8,7 +8,7 @@
 {% endblock %}
 {% block scripts %}
     <script>
-        var parts = window.location.href.split("/");
+        let parts = window.location.href.split("/");
         parts.pop()
         let tag = parts.pop()
         let list = $("#advertList")[0];
@@ -21,7 +21,7 @@
             })
             .then(data => {
                 for (advert in data){
-                    list.innerHTML +=    '<a href="' + '/adverts/' + data[advert]["id"] + '" class="list-group-item list-group-item-action">' + data[advert]["name"] + '</a>'
+                    list.innerHTML +=    '<a href="' + '/site/adverts/' + data[advert]["id"] + '" class="list-group-item list-group-item-action">' + data[advert]["name"] + '</a>'
                 }
             })
             .catch(error => {

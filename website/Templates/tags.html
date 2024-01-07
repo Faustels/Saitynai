@@ -19,7 +19,7 @@
             })
             .then(data => {
                 for (tag in data){
-                    list.innerHTML +=    '<a href="' + '/tags/' + data[tag]["tag"] + '/adverts" class="list-group-item list-group-item-action">' + data[tag]["tag"] + '</a>'
+                    list.innerHTML +=    '<a href="' + '/site/tags/' + data[tag]["tag"] + '/adverts" class="list-group-item list-group-item-action">' + data[tag]["tag"] + '</a>'
                 }
             })
             .catch(error => {

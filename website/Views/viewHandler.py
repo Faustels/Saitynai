@@ -8,3 +8,6 @@ def tags(request):
 
 def adverts(request, tag):
     return render(request, "adverts.html")
+
+def advert(request, id):
+    return render(request, "advert.html")

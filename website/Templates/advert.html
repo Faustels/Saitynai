@@ -1,0 +1,401 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="modal fade" id="removeModal" tabindex="-1" aria-labelledby="removeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="removeModalTitle">Pašalinti</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        Ar tikrai pašalinti komentarą?
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Atšaukti</button>
+                    <button type="button" class="btn btn-primary" onclick="removeComplete()">Pašalinti</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="removeAdvertModal" tabindex="-1" aria-labelledby="removeAdvertModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="removeAdvertModalTitle">Pašalinti</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        Ar tikrai pašalinti skelbimą?
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Atšaukti</button>
+                    <button type="button" class="btn btn-primary" onclick="removeAdvert()">Pašalinti</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="advertData">
+        <h1 id="advertTitle"></h1>
+        <div id="advertCreator"></div>
+        <div id="advertDescription"></div>
+        <div>
+            <p>
+                <button id="advertRateNegative" class="btn btn-secondary" onclick="rateAdvert(false)">-</button>
+                <span id="advertFullRating">0</span>
+                <button id="advertRatePositive" class="btn btn-secondary" onclick="rateAdvert(true)">+</button>
+            </p>
+        </div>
+        <p id="advertEditStartButtons" style="display:none">
+            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#removeAdvertModal">Pašalinti</button>
+            <button class="btn btn-primary" onclick="startAdvertEdit()">Redaguoti</button>
+        </p>
+        <select style="display:none" id="advertEditTagSelection"></select>
+        <p style="display:none" id="advertEditingButtons">
+            <button class="btn btn-danger"  onclick="cancelAdvertEdit()">Atšaukti</button>
+            <button class="btn btn-primary" onclick="finishAdvertEdit()">Išsaugoti</button>
+        </p>
+    </div>
+    <div id="comments" class="commentList">
+    </div>
+    <div id="createCommentDiv">
+        <textarea id="commentCreateText" rows="4" cols="50"></textarea>
+        <button class="btn btn-danger" onclick="createComment2()">Sukurti</button>
+    </div>
+{% endblock %}
+{% block scripts %}
+    <script>
+        if (!("token" in localStorage)){
+            $("#createCommentDiv")[0].style.display = "none";
+        }
+        let parts = window.location.href.split("/");
+        let advertId = parts.pop()
+        var editCommentId = null;
+        var editCommentText = null;
+        var removeCommentId = null;
+
+        var advertData;
+        var advertTitle = $("#advertTitle")[0];
+        var advertDescription = $("#advertDescription")[0];
+        var advertCreator = $("#advertCreator")[0];
+        var advertEditStartButtons = $("#advertEditStartButtons")[0];
+        var advertEditingButtons = $("#advertEditingButtons")[0];
+        var advertEditTagSelection = $("#advertEditTagSelection")[0];
+
+        var advertRateNegative = $("#advertRateNegative")[0];
+        var advertRatePositive = $("#advertRatePositive")[0];
+        var advertFullRating = $("#advertFullRating")[0];
+        var userPositive;
+
+        function loadTagSelection(){
+            fetch("https://skelbiameapi.azurewebsites.net/api/tags")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                for (tag in data){
+                    let temp = ""
+                    temp += '<option ';
+                    if (data[tag]["tag"] === advertData["tag"]){
+                        temp += 'selected="selected"';
+                    }
+                    temp += '>' + data[tag]["tag"] + '</option>';
+                    advertEditTagSelection.innerHTML += temp;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function loadRatings(){
+            fetch("https://skelbiameapi.azurewebsites.net/api/adverts/" + advertId + "/ratings", {
+                method: "GET",
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8",
+                    "Authorization": "Bearer " + accessToken
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                advertFullRating.innerHTML = data["fullRating"];
+                if (data["userPositive"] === true){
+                    userPositive = true;
+                    advertRatePositive.className = "btn btn-primary";
+                }
+                else if (data["userPositive"] === false){
+                    userPositive = false;
+                    advertRateNegative.className = "btn btn-primary";
+                }
+
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        fetch("https://skelbiameapi.azurewebsites.net/api/adverts/" + advertId)
+            .then(response => {
+                if (!response.ok) {
+                    if (response.status === 404){
+                        window.location.replace("/site");
+                    }
+                    else{
+                        throw new Error('Network response was not ok');
+                    }
+                }
+                return response.json();
+            })
+            .then(data => {
+                loadRatings();
+                advertData = data;
+                document.title = data["name"];
+                advertTitle.innerHTML = data["name"];
+                advertDescription.innerHTML = data["description"];
+                let date = new Date(Date.parse(data["uploadtime"]));
+                advertCreator.innerHTML = '<p class="advertCreator"><span class="advertCreatorUsername">' + data["user"] + '</span>  <span class="commentTime">' + date.toLocaleString() +  '</span></p>'
+                if (username === data["user"] || isAdmin){
+                    loadTagSelection();
+                    advertEditStartButtons.style.display = "block";
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+
+        let commentList = $("#comments")[0];
+        fetch("https://skelbiameapi.azurewebsites.net/api/adverts/" + advertId + "/comments")
+            .then(response => {
+                if (!response.ok) {
+                    if (response.status === 404){
+
+                    }
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                for (comment in data){
+                    let date = new Date(Date.parse(data[comment]["date"]));
+                    commentList.innerHTML +=
+                    '<div class="fullComment">' +
+                        '<p class="commentFirstLine"><span class="commentUsername">' + data[comment]["user"] + '</span>  <span class="commentTime">' + date.toLocaleString() + '</span></p>' +
+                        '<div class="comment" id="commentText' + data[comment]["id"] + '">' + data[comment]["text"] + '</div>';
+
+                    if (username == data[comment]["user"] || isAdmin){
+                        commentList.innerHTML += '<p id="commentChangeStart' + data[comment]["id"] + '" ><button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#removeModal" onclick="removeComment(' + data[comment]["id"] + ')">Pašalinti</button><button class="btn btn-secondary" onclick="editComment(' + data[comment]["id"] + ')">Redaguoti</button></p>';
+                        commentList.innerHTML += '<p style="display:none" id="commentChangeEnd' + data[comment]["id"] + '" ><button class="btn btn-danger" onclick="editCancel()">Atšaukti</button><button class="btn btn-secondary" onclick="editFinish()">Redaguoti</button></p>';
+
+                    }
+
+                    commentList.innerHTML += '</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+
+        function editComment(id){
+            editCancel();
+
+            editCommentId = id;
+            $("#commentChangeStart" + editCommentId)[0].style.display = "none";
+            $("#commentChangeEnd" + editCommentId)[0].style.display = "block";
+
+            let editCommentDiv = $("#commentText" + id)[0];
+            editCommentText = editCommentDiv.innerHTML
+
+            editCommentDiv.innerHTML = '<textarea id="commentEditText" rows="4" cols="50">' + editCommentText +
+            '</textarea>';
+        }
+
+        function editCancel(){
+            if (editCommentId != null){
+                $("#commentText" + editCommentId)[0].innerHTML = editCommentText;
+                $("#commentChangeStart" + editCommentId)[0].style.display = "block";
+                $("#commentChangeEnd" + editCommentId)[0].style.display = "none";
+                editCommentId = null;
+            }
+        }
+
+        function editFinish(){
+            if (!tokenAccessStillValid()){
+                getAccessToken();
+            }
+            fetch("https://skelbiameapi.azurewebsites.net/api/comments/" + editCommentId, {
+                method: "PUT",
+                body: JSON.stringify({
+                    text: $("#commentEditText")[0].value
+                }),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8",
+                    "Authorization": "Bearer " + accessToken
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error')
+                }
+                return response.json();
+            })
+            .then(data => {
+                location.reload();
+            })
+            .catch(error =>{
+                console.log(error);
+            });
+        }
+
+        function removeComment(id){
+            removeCommentId = id;
+        }
+
+        function removeComplete(){
+            if (!tokenAccessStillValid()){
+                getAccessToken();
+            }
+            fetch("https://skelbiameapi.azurewebsites.net/api/comments/" + removeCommentId, {
+                method: "DELETE",
+                body: JSON.stringify({
+                }),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8",
+                    "Authorization": "Bearer " + accessToken
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error')
+                }
+                return response;
+            })
+            .then(data => {
+                location.reload();
+            })
+            .catch(error =>{
+                console.log(error);
+            });
+        }
+
+        function createComment2(){
+            if (!tokenAccessStillValid()){
+                getAccessToken();
+            }
+            fetch("https://skelbiameapi.azurewebsites.net/api/adverts/" + advertId + "/comments", {
+                method: "POST",
+                body: JSON.stringify({
+                    text: $("#commentCreateText")[0].value
+                }),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8",
+                    "Authorization": "Bearer " + accessToken
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error')
+                }
+                return response;
+            })
+            .then(data => {
+                location.reload();
+            })
+            .catch(error =>{
+                console.log(error);
+            });
+        }
+
+        function startAdvertEdit(){
+            advertEditStartButtons.style.display = "none";
+            advertEditingButtons.style.display = "block";
+            advertEditTagSelection.style.display = "block";
+            advertTitle.innerHTML = '<input type="text" id="advertEditNewTitle" value="' + advertData["name"] + '">';
+            advertDescription.innerHTML = '<textarea id="advertEditNewDescription" rows="4" cols="50">' + advertData["description"] +
+            '</textarea>'
+        }
+
+        function cancelAdvertEdit(){
+            advertEditStartButtons.style.display = "block";
+            advertEditingButtons.style.display = "none";
+            advertEditTagSelection.style.display = "none";
+            advertTitle.innerHTML = advertData["name"];
+            advertDescription.innerHTML = advertData["description"];
+            advertEditTagSelection.value = advertData["tag"];
+        }
+
+        function finishAdvertEdit(){
+            if (!tokenAccessStillValid()){
+                getAccessToken();
+            }
+            fetch("https://skelbiameapi.azurewebsites.net/api/adverts/" + advertId, {
+                method: "PUT",
+                body: JSON.stringify({
+                    name: $("#advertEditNewTitle")[0].value,
+                    description: $("#advertEditNewDescription")[0].value,
+                    tag: advertEditTagSelection.value
+                }),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8",
+                    "Authorization": "Bearer " + accessToken
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error')
+                }
+                return response.json();
+            })
+            .then(data => {
+                location.reload();
+            })
+            .catch(error =>{
+                console.log(error);
+            });
+        }
+
+        function removeAdvert(){
+            if (!tokenAccessStillValid()){
+                getAccessToken();
+            }
+            fetch("https://skelbiameapi.azurewebsites.net/api/adverts/" + advertId, {
+                method: "DELETE",
+                body: JSON.stringify({
+                }),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8",
+                    "Authorization": "Bearer " + accessToken
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error')
+                }
+                return response;
+            })
+            .then(data => {
+                window.location.replace("/site");
+            })
+            .catch(error =>{
+                console.log(error);
+            });
+        }
+
+        function rateAdvert(type){
+            if (type === userPositive){
+
+            }
+        }
+
+    </script>
+{% endblock %}
