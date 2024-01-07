@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}
+    <title>Kategorijos</title>
+{% endblock %}
+{% block content %}
+    <div class="list-group" id="tagList">
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        let list = $("#tagList")[0];
+        fetch("https://skelbiameapi.azurewebsites.net/api/tags")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                for (tag in data){
+                    list.innerHTML +=    '<a href="' + '/tags/' + data[tag]["tag"] + '/adverts" class="list-group-item list-group-item-action">' + data[tag]["tag"] + '</a>'
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    </script>
+{% endblock %}

@@ -2,11 +2,21 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+import json
+
+def loadLocalEnvironment():
+    f = open("localEnviron")
+    data = json.load(f)
+    for variable in data:
+        os.environ[variable] = data[variable]
+    f.close()
 
 
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Saitynai.settings')
+    if os.path.isfile("localEnviron"):
+        loadLocalEnvironment()
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
