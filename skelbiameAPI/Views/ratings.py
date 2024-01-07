@@ -115,7 +115,7 @@ def createRating(request, advert):
             if body["positive"] != 1 and body["positive"] != 0:
                 return HttpResponse(status=422)
             try:
-                requestedRating = Rating.objects.get(advertId=advert, user= requestedUser)
+                requestedRating = Rating.objects.get(advertid=advert, user= requestedUser)
                 requestedRating.positive = body["positive"]
                 requestedRating.save()
                 return HttpResponse()
@@ -127,7 +127,7 @@ def createRating(request, advert):
 
     if request.method == "DELETE":
         try:
-            requestedRating = Rating.objects.get(advertId=advert, user=requestedUser)
+            requestedRating = Rating.objects.get(advertid=advert, user=requestedUser)
             requestedRating.delete()
             return HttpResponse()
         except:

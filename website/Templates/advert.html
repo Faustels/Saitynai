@@ -392,8 +392,38 @@
         }
 
         function rateAdvert(type){
+            if (!tokenAccessStillValid()){
+                getAccessToken();
+            }
             if (type === userPositive){
-
+                fetch("https://skelbiameapi.azurewebsites.net/api/adverts/" + advertId +"/ratings", {
+                    method: "DELETE",
+                    body: JSON.stringify({
+                    }),
+                    headers: {
+                        "Content-type": "application/json; charset=UTF-8",
+                        "Authorization": "Bearer " + accessToken
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error')
+                    }
+                    return response;
+                })
+                .then(data => {
+                    if (type === true){
+                        advertFullRating.innerHTML = parseInt(advertFullRating.innerHTML - 1);
+                        advertRatePositive.className = "btn btn-secondary";
+                    }
+                    else {
+                        advertFullRating.innerHTML = parseInt(advertFullRating.innerHTML + 1);
+                        advertRateNegative.className = "btn btn-secondary";
+                    }
+                })
+                .catch(error =>{
+                    console.log(error);
+                });
             }
         }
 
