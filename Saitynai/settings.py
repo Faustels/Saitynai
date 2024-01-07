@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ["skelbiameapi.azurewebsites.net", "localhost", "127.0.0.1"]
 # Application definition
 
 INSTALLED_APPS = [
+    'website',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -38,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'skelbiameAPI',
-    'website',
     'corsheaders',
 ]
 
@@ -69,7 +69,7 @@ ROOT_URLCONF = 'Saitynai.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
