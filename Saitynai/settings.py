@@ -81,6 +81,12 @@ TEMPLATES = [
         },
     },
 ]
+
+TEMPLATE_DIRS = (
+    "website/templates",
+)
+
+
 CORS_ORIGIN_ALLOW_ALL = True
 
 WSGI_APPLICATION = 'Saitynai.wsgi.application'
