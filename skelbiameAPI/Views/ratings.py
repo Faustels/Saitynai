@@ -22,7 +22,7 @@ def ratingByUserAdvert(request, advert):
             return HttpResponseNotFound()
 
         return JsonResponse(model_to_dict(requestedRating), safe=False, json_dumps_params={'indent': 2})
-    if request.method == "POST":
+    elif request.method == "POST" or request.method == "PATCH" or request.method == "PUT":
         return createRating(request, advert)
     else:
         return HttpResponse(status=405)
@@ -53,7 +53,7 @@ def ratingOfAdvert(request, advert):
             except:
                 pass
         return JsonResponse({"fullRating": ans, "userPositive": userRating}, safe=False, json_dumps_params={'indent': 2})
-    elif request.method == "POST":
+    elif request.method == "POST" or request.method == "PATCH" or request.method == "PUT":
         return createRating(request, advert)
     else:
         return HttpResponse(status=405)
@@ -100,18 +100,6 @@ def rating(request, id):
         requestedRating.delete()
         return HttpResponse()
 
-    elif request.method == "PUT" or request.method == "PATCH":
-        body = json.loads(request.body)
-        if len(body) != 0 and IsValid(body, ["positive"]):
-            if body["positive"] != 1 and body["positive"] != 0:
-                return HttpResponse(status=422)
-            requestedRating.positive = body["positive"]
-            requestedRating.save()
-            return HttpResponse()
-
-        else:
-            return HttpResponseBadRequest()
-
     else:
         return HttpResponse(status=405)
 
@@ -120,37 +108,55 @@ def createRating(request, advert):
     token = ToPureToken(request.headers.get("Authorization"))
 
     username = TokenUser(token)
+    print(username)
     if username is None:
         return HttpResponseForbidden()
 
+    requestedUser = User.objects.get(username=username)
+
     body = json.loads(request.body)
 
-    if IsFullValid(body, ["positive"]):
-        try:
-            requestedAdvert = Advert.objects.get(id=advert)
-        except ObjectDoesNotExist:
-            return HttpResponse(status=422)
-
-        requestedUser = User.objects.get(username=username)
-
-        try:
-            requestedRating = Rating.objects.get(user=requestedUser, advertid=requestedAdvert)
-            return HttpResponse(status=409)
-        except ObjectDoesNotExist:
+    if request.method == "PUT" or request.method == "PATCH":
+        body = json.loads(request.body)
+        if len(body) != 0 and IsValid(body, ["positive"]):
             if body["positive"] != 1 and body["positive"] != 0:
                 return HttpResponse(status=422)
-            newRating = Rating()
-            newRating.user = requestedUser
+            try:
+                requestedRating = Rating.objects.get(advertId=advert, user= requestedUser)
+                requestedRating.positive = body["positive"]
+                requestedRating.save()
+                return HttpResponse()
+            except:
+                return HttpResponseNotFound()
 
-            newRating.positive = body["positive"]
-            newRating.advertid = requestedAdvert
+        else:
+            return HttpResponseBadRequest()
+
+    elif request.method == "POST":
+        if IsFullValid(body, ["positive"]):
+            try:
+                requestedAdvert = Advert.objects.get(id=advert)
+            except ObjectDoesNotExist:
+                return HttpResponse(status=422)
 
             try:
-                newRating.clean_fields()
-            except ValidationError:
-                return HttpResponse(status=422)
-            newRating.save()
-            return HttpResponse(status=201)
+                requestedRating = Rating.objects.get(user=requestedUser, advertid=requestedAdvert)
+                return HttpResponse(status=409)
+            except ObjectDoesNotExist:
+                if body["positive"] != 1 and body["positive"] != 0:
+                    return HttpResponse(status=422)
+                newRating = Rating()
+                newRating.user = requestedUser
+
+                newRating.positive = body["positive"]
+                newRating.advertid = requestedAdvert
+
+                try:
+                    newRating.clean_fields()
+                except ValidationError:
+                    return HttpResponse(status=422)
+                newRating.save()
+                return HttpResponse(status=201)
 
         return HttpResponse(status=409)
     else:
