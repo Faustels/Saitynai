@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}
+    <title>Naudotojas</title>
+{% endblock %}
+
+{% block content %}
+    <div class="modal fade" id="removeUserModal" tabindex="-1" aria-labelledby="removeUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="removeUserModalTitle">Pašalinti</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        Ar tikrai pašalinti vartotoją?
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Atšaukti</button>
+                    <button type="button" class="btn btn-primary" onclick="removeUser()">Pašalinti</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="checkedUserData">
+        <div id="checkedUsername">
+        </div>
+        <div id="checkedEmail">
+
+        </div>
+        <div id="checkedRole">
+
+        </div>
+        <p id="checkedUserEditStart" style="display:none">
+            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#removeUserModal">Pašalinti</button>
+            <button class="btn btn-primary" onclick="startUserEdit()">Redaguoti</button>
+        </p>
+    </div>
+    <div id="checkedUserEditData" style="display:none">
+        <label for="editEmail" class="col-form-label">El. paštas</label>
+        <input type="email" class="form-control" id="editEmail">
+
+        <label for="editPassword" class="col-form-label">Slaptažodis</label>
+        <input class="form-control" type="password" id="editPassword">
+
+        <p id="checkedUserEditEnd">
+            <button class="btn btn-secondary" onclick="cancelUserEdit()">Atšaukti</button>
+            <button class="btn btn-primary" onclick="finishUserEdit()">Redaguoti</button>
+        </p>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        let parts = window.location.href.split("/");
+        var checkedUser = parts.pop();
+        document.title = checkedUser;
+        var checkedUsername = $("#checkedUsername")[0];
+        var checkedEmail = $("#checkedEmail")[0];
+        var checkedRole = $("#checkedRole")[0];
+        var checkedUserEditStart = $("#checkedUserEditStart")[0];
+        var checkedUserData = $("#checkedUserData")[0];
+
+        var editEmail = $("#editEmail")[0];
+        var editPassword = $("#editPassword")[0];
+        var checkedUserEditData = $("#checkedUserEditData")[0];
+        fetch("https://skelbiameapi.azurewebsites.net/api/users/" + checkedUser)
+            .then(response => {
+                if (!response.ok) {
+                    window.location.replace("/site");
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data["username"] === username || isAdmin){
+                    checkedUserEditStart.style.display = "block";
+                    editEmail.value = data["email"];
+                }
+                checkedUsername.innerHTML = data["username"];
+                checkedEmail.innerHTML = data["email"];
+                checkedRole.innerHTML = data["role"];
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+
+        function startUserEdit(){
+            checkedUserData.style.display = "none";
+            checkedUserEditData.style.display = "block";
+        }
+
+        function cancelUserEdit(){
+            checkedUserData.style.display = "block";
+            checkedUserEditData.style.display = "none";
+        }
+
+        function finishUserEdit(){
+            if (!tokenAccessStillValid()){
+                getAccessToken();
+            }
+            fetch("https://skelbiameapi.azurewebsites.net/api/users/" + checkedUser, {
+                method: "PUT",
+                body: JSON.stringify({
+                    email: editEmail.value,
+                    password: editPassword.value
+                }),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8",
+                    "Authorization": "Bearer " + accessToken
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error')
+                }
+                return response.json();
+            })
+            .then(data => {
+                location.reload();
+            })
+            .catch(error =>{
+                console.log(error);
+            });
+        }
+
+        function removeUser(){
+            if (!tokenAccessStillValid()){
+                getAccessToken();
+            }
+            fetch("https://skelbiameapi.azurewebsites.net/api/users/" + checkedUser, {
+                method: "DELETE",
+                body: JSON.stringify({
+                }),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8",
+                    "Authorization": "Bearer " + accessToken
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error')
+                }
+                return response;
+            })
+            .then(data => {
+                if (checkedUser === username){
+                    localStorage.removeItem("token");
+                }
+                window.location.replace("/site");
+            })
+            .catch(error =>{
+                console.log(error);
+            });
+        }
+    </script>
+{% endblock %}

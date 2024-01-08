@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}
+    <title>Naujas skelbimas</title>
+{% endblock %}
+
+{% block content %}
+    <div>
+        <input type="text" id="advertTitle" value="Pavadinimas">
+        <textarea id="advertDescription" rows="4" cols="50">Aprašymas</textarea>
+        <select id="advertTagSelection"></select>
+        <button class="btn btn-primary" onclick="createAdvert()">Sukurti</button>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        if (!("token" in localStorage)){
+            window.location.replace("/site");
+        }
+        var advertTagSelection = $("#advertTagSelection")[0];
+        var advertTitle = $("#advertTitle")[0];
+        var advertDescription = $("#advertDescription")[0];
+        function loadTagSelection(){
+            fetch("https://skelbiameapi.azurewebsites.net/api/tags")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                for (tag in data){
+                    let temp = ""
+                    temp += '<option>' + data[tag]["tag"] + '</option>';
+                    advertTagSelection.innerHTML += temp;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+        loadTagSelection();
+
+        function createAdvert(){
+            if (!tokenAccessStillValid()){
+                getAccessToken();
+            }
+            fetch("https://skelbiameapi.azurewebsites.net/api/adverts", {
+                method: "POST",
+                body: JSON.stringify({
+                    name: advertTitle.value,
+                    description: advertDescription.value,
+                    tag: advertTagSelection.value
+                }),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8",
+                    "Authorization": "Bearer " + accessToken
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error')
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(data);
+                window.location.href = "/site/adverts/" + data["id"];
+            })
+            .catch(error =>{
+                console.log(error);
+            });
+        }
+    </script>
+{% endblock %}

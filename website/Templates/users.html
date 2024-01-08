@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}
+    <title>Naudotojai</title>
+{% endblock %}
+{% block content %}
+    <div class="list-group" id="userList">
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        let list = $("#userList")[0];
+        fetch("https://skelbiameapi.azurewebsites.net/api/users")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                for (user in data){
+                    list.innerHTML +=    '<a href="' + '/site/user/' + data[user]["username"] + '" class="list-group-item list-group-item-action">' + data[user]["username"] + '</a>'
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    </script>
+{% endblock %}
