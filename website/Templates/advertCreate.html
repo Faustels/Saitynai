@@ -6,10 +6,18 @@
 
 {% block content %}
     <div>
-        <input type="text" id="advertTitle" value="Pavadinimas">
-        <textarea id="advertDescription" rows="4" cols="50">Aprašymas</textarea>
-        <select id="advertTagSelection"></select>
-        <button class="btn btn-primary" onclick="createAdvert()">Sukurti</button>
+        <div>
+            <input type="text" id="advertTitle" value="Pavadinimas">
+        </div>
+        <div>
+            <textarea id="advertDescription" rows="4" cols="50">Aprašymas</textarea>
+        </div>
+        <div>
+            <select id="advertTagSelection"></select>
+        </div>
+        <div>
+            <button class="btn btn-primary" onclick="createAdvert()">Sukurti</button>
+        </div>
     </div>
 {% endblock %}
 

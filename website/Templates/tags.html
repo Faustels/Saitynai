@@ -1,14 +1,22 @@
 {% extends "base.html" %}
 {% block title %}
-    <title>Kategorijos</title>
+    <title>Skelbiame</title>
 {% endblock %}
 {% block content %}
     <div class="list-group" id="tagList">
+    </div>
+    <div>
+        <button class="btn btn-primary" onclick='location.href="/site/users"'>Vartotojai</button>
+        <button id="createAdvertButton" class="btn btn-primary" onclick='location.href="/site/adverts/create"'>Naujas skelbimas</button>
     </div>
 {% endblock %}
 
 {% block scripts %}
     <script>
+        let createAdvertButton = $("#createAdvertButton")[0];
+        if (!("token" in localStorage)){
+            createAdvertButton.style.display = "none";
+        }
         let list = $("#tagList")[0];
         fetch("https://skelbiameapi.azurewebsites.net/api/tags")
             .then(response => {

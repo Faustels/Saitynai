@@ -11,6 +11,7 @@
         let parts = window.location.href.split("/");
         parts.pop()
         let tag = parts.pop()
+        document.title = tag;
         let list = $("#advertList")[0];
         fetch("https://skelbiameapi.azurewebsites.net/api/tags/" + tag + "/adverts")
             .then(response => {
