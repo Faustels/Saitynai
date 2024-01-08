@@ -70,9 +70,9 @@
         </div>
     </div>
 
-    <nav class="navbar navbar-dark bg-primary">
+    <nav class="navbar navbar-dark bg-primary navbar-expand-lg">
         <div class="container-fluid" id="navbarContent">
-            <a class="navbar-brand">Skelbiame</a>
+            <a class="nav-link" href="site">Skelbiame</a>
             <div class="d-flex">
                 <button class="btn btn-light btn-outline-dark" data-bs-toggle="modal" data-bs-target="#registerModal">Registruotis</button>
                 <button class="btn btn-light btn-outline-dark" data-bs-toggle="modal" data-bs-target="#logInModal">Prisijungti</button>
@@ -203,7 +203,22 @@
                 isAdmin = true;
             }
 
-            $("#navbarContent")[0].innerHTML = '<a class="navbar-brand" id="navbarUsername">' + username + '</a>' +
+            $("#navbarContent")[0].innerHTML = '<a class="navbar-brand" href="/site">Skelbiame</a>'+
+                '<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">' +
+                    '<span class="navbar-toggler-icon"></span>'+
+                '</button>' +
+                '<div class="collapse navbar-collapse" id="navbarSupportedContent">'+
+                    '<ul class="navbar-nav me-auto mb-2 mb-lg-0">'+
+                        '<li class="nav-item">'+
+                            '<a class="nav-link" id="navbarUsername" href="/site/user/' + username + '">' + username + '</a>' +
+                        '</li>'+
+                    '</ul>'+
+                    '<ul class="navbar-nav ms-auto mb-2 mb-lg-0">'+
+                        '<li class="nav-item">'+
+                            '<button class="btn btn-light btn-outline-danger" onclick="logout()">Atsijungti</button>'+
+                        '</li>'+
+                    '</ul>'+
+                '</div>'
                 '<div class="d-flex">' +
                     '<button class="btn btn-light btn-outline-danger" onclick="logout()">Atsijungti</button>'+
                 '</div>'
@@ -215,7 +230,20 @@
             $(".modal-backdrop").remove();
         }
         function notLoggedIn(){
-            $("#navbarContent")[0].innerHTML = '<a class="navbar-brand">Skelbiame</a><div class="d-flex"><button class="btn btn-light btn-outline-dark" data-bs-toggle="modal" data-bs-target="#registerModal">Registruotis</button><button class="btn btn-light btn-outline-dark" data-bs-toggle="modal" data-bs-target="#logInModal">Prisijungti</button></div>'
+            $("#navbarContent")[0].innerHTML = '<a class="navbar-brand" href="/site">Skelbiame</a>' +
+                '<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">' +
+                    '<span class="navbar-toggler-icon"></span>'+
+                '</button>' +
+                '<div class="collapse navbar-collapse" id="navbarSupportedContent">'+
+                    '<ul class="navbar-nav ms-auto mb-2 mb-lg-0">'+
+                        '<li class="nav-item">'+
+                            '<button class="btn btn-light btn-outline-dark" data-bs-toggle="modal" data-bs-target="#registerModal">Registruotis</button>'+
+                        '</li>'+
+                        '<li class="nav-item">'+
+                            '<button class="btn btn-light btn-outline-dark" data-bs-toggle="modal" data-bs-target="#logInModal">Prisijungti</button>'+
+                        '</li>'+
+                    '</ul>'+
+                '</div>'
         }
         function logout(){
             accessToken = null;
