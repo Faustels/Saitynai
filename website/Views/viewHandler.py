@@ -11,3 +11,11 @@ def adverts(request, tag):
 
 def advert(request, id):
     return render(request, "advert.html")
+
+def createAdvert(request):
+    return render(request, "advertCreate.html")
+
+def user(request, userId):
+    return render(request, "user.html")
+def users(request):
+    return render(request, "users.html")

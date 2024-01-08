@@ -88,7 +88,7 @@
         var advertRateNegative = $("#advertRateNegative")[0];
         var advertRatePositive = $("#advertRatePositive")[0];
         var advertFullRating = $("#advertFullRating")[0];
-        var userPositive;
+        var userPositive = null;
 
         function loadTagSelection(){
             fetch("https://skelbiameapi.azurewebsites.net/api/tags")
@@ -115,6 +115,9 @@
         }
 
         function loadRatings(){
+            if (accessToken == null){
+                sleep(2000);
+            }
             fetch("https://skelbiameapi.azurewebsites.net/api/adverts/" + advertId + "/ratings", {
                 method: "GET",
                 headers: {
@@ -158,7 +161,6 @@
                 return response.json();
             })
             .then(data => {
-                loadRatings();
                 advertData = data;
                 document.title = data["name"];
                 advertTitle.innerHTML = data["name"];
@@ -169,6 +171,7 @@
                     loadTagSelection();
                     advertEditStartButtons.style.display = "block";
                 }
+                setTimeout(loadRatings, 200);
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -413,12 +416,89 @@
                 })
                 .then(data => {
                     if (type === true){
-                        advertFullRating.innerHTML = parseInt(advertFullRating.innerHTML - 1);
+                        advertFullRating.innerHTML = parseInt(advertFullRating.innerHTML) - 1;
                         advertRatePositive.className = "btn btn-secondary";
                     }
                     else {
-                        advertFullRating.innerHTML = parseInt(advertFullRating.innerHTML + 1);
+                        advertFullRating.innerHTML = parseInt(advertFullRating.innerHTML) + 1;
                         advertRateNegative.className = "btn btn-secondary";
+                    }
+                    userPositive = null;
+                })
+                .catch(error =>{
+                    console.log(error);
+                });
+            }
+            else if (userPositive === null){
+                let positive = 0;
+                if (type === true){
+                    positive = 1;
+                }
+                fetch("https://skelbiameapi.azurewebsites.net/api/adverts/" + advertId +"/ratings", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        positive: positive
+                    }),
+                    headers: {
+                        "Content-type": "application/json; charset=UTF-8",
+                        "Authorization": "Bearer " + accessToken
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error')
+                    }
+                    return response;
+                })
+                .then(data => {
+                    if (type === true){
+                        advertFullRating.innerHTML = parseInt(advertFullRating.innerHTML) + 1;
+                        advertRatePositive.className = "btn btn-primary";
+                        userPositive = true;
+                    }
+                    else {
+                        advertFullRating.innerHTML = parseInt(advertFullRating.innerHTML) - 1;
+                        advertRateNegative.className = "btn btn-primary";
+                        userPositive = false;
+                    }
+                })
+                .catch(error =>{
+                    console.log(error);
+                });
+            }
+            else {
+                let positive = 0;
+                if (type === true){
+                    positive = 1;
+                }
+                fetch("https://skelbiameapi.azurewebsites.net/api/adverts/" + advertId +"/ratings", {
+                    method: "PUT",
+                    body: JSON.stringify({
+                        positive: positive
+                    }),
+                    headers: {
+                        "Content-type": "application/json; charset=UTF-8",
+                        "Authorization": "Bearer " + accessToken
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error')
+                    }
+                    return response;
+                })
+                .then(data => {
+                    if (type === true){
+                        advertFullRating.innerHTML = parseInt(advertFullRating.innerHTML) + 2;
+                        advertRatePositive.className = "btn btn-primary";
+                        advertRateNegative.className = "btn btn-secondary";
+                        userPositive = true;
+                    }
+                    else {
+                        advertFullRating.innerHTML = parseInt(advertFullRating.innerHTML) - 2;
+                        advertRateNegative.className = "btn btn-primary";
+                        advertRatePositive.className = "btn btn-secondary";
+                        userPositive = false;
                     }
                 })
                 .catch(error =>{
